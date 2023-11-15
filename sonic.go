@@ -20,4 +20,6 @@
 //go:generate make
 package sonic
 
+import "github.com/bytedance/sonic"
+
 var Pretouch = sonic.Pretouch
