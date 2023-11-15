@@ -1,3 +1,4 @@
+//go:build !go1.21
 // +build !go1.21
 
 /*
@@ -19,7 +20,7 @@
 package resolver
 
 import (
-    _ `github.com/go-shafaq/go1.20-encoding-json`
+    `github.com/go-shafaq/go1.20-encoding-json`
     `reflect`
     _ `unsafe`
 )
@@ -43,6 +44,29 @@ type StdStructFields struct {
     nameIndex map[string]int
 }
 
-//go:noescape
-//go:linkname typeFields github.com/go-shafaq/go1.20-encoding-json.typeFields
-func typeFields(_ reflect.Type) StdStructFields
+func typeFields(t reflect.Type) StdStructFields {
+	out := json.TypeFields(t)
+	in := StdStructFields{}
+
+	in.nameIndex = out.NameIndex
+	in.list = make([]StdField, len(out.List))
+	for i, f := range out.List {
+		of := StdField{}
+
+		of.name = f.Name
+		of.nameBytes = f.NameBytes
+		of.equalFold = nil
+		of.nameNonEsc = f.NameNonEsc
+		of.nameEscHTML = f.NameEscHTML
+		of.tag = f.Tag
+		of.index = f.Index
+		of.typ = f.Typ
+		of.omitEmpty = f.OmitEmpty
+		of.quoted = f.Quoted
+		of.encoder = nil
+
+		in.list[i] = of
+	}
+
+	return in
+}

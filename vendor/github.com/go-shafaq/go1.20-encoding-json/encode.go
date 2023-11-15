@@ -1422,3 +1422,52 @@ func cachedTypeFields(t reflect.Type) structFields {
 	f, _ := fieldCache.LoadOrStore(t, typeFields(t))
 	return f.(structFields)
 }
+
+func TypeFields(t reflect.Type) StructFields {
+	in := typeFields(t)
+	out := StructFields{}
+
+	out.NameIndex = in.nameIndex
+	out.List = make([]Field, len(in.list))
+	for i, f := range in.list {
+		of := Field{}
+
+		of.Name = f.name
+		of.NameBytes = f.nameBytes
+		of.EqualFold = f.equalFold
+		of.NameNonEsc = f.nameNonEsc
+		of.NameEscHTML = f.nameEscHTML
+		of.Tag = f.tag
+		of.Index = f.index
+		of.Typ = f.typ
+		of.OmitEmpty = f.omitEmpty
+		of.Quoted = f.quoted
+		of.Encoder = f.encoder
+
+		out.List[i] = of
+	}
+
+	return out
+}
+
+type Field struct {
+	Name      string
+	NameBytes []byte
+	EqualFold func(s, t []byte) bool
+
+	NameNonEsc  string // `"` + name + `":`
+	NameEscHTML string // `"` + HTMLEscape(name) + `":`
+
+	Tag       bool
+	Index     []int
+	Typ       reflect.Type
+	OmitEmpty bool
+	Quoted    bool
+
+	Encoder encoderFunc
+}
+
+type StructFields struct {
+	List      []Field
+	NameIndex map[string]int
+}
